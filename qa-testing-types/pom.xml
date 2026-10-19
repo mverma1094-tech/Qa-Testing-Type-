@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.manish.qa</groupId>
+    <artifactId>qa-testing-types</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>QA Testing Types Framework</name>
+    <description>One project demonstrating 18 software testing types with Java, TestNG, Selenium and JaCoCo</description>
+
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <selenium.version>4.25.0</selenium.version>
+        <testng.version>7.10.2</testng.version>
+        <surefire.version>3.5.1</surefire.version>
+        <jacoco.version>0.8.12</jacoco.version>
+
+        <!-- Defaults: no browser needed. Override with -Dgroups=smoke (or any group). -->
+        <groups>unit,integration,whitebox,blackbox,security,performance,load,stress,adhoc</groups>
+        <browser>chrome</browser>
+        <headless>false</headless>
+        <baseUrl>https://www.saucedemo.com/</baseUrl>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${testng.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <groups>${groups}</groups>
+                    <systemPropertyVariables>
+                        <browser>${browser}</browser>
+                        <headless>${headless}</headless>
+                        <baseUrl>${baseUrl}</baseUrl>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
+            <!-- White-box testing: code coverage report at target/site/jacoco/index.html -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <!-- `mvn verify` fails the build if line coverage drops below 80% -->
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Compatibility testing: mvn test -Pcompatibility (runs suites/compatibility.xml) -->
+        <profile>
+            <id>compatibility</id>
+            <properties>
+                <groups>compatibility</groups>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <suiteXmlFiles>
+                                <suiteXmlFile>suites/compatibility.xml</suiteXmlFile>
+                            </suiteXmlFiles>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
